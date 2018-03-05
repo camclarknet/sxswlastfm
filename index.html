@@ -1,0 +1,327 @@
+<html>
+
+    <head>
+
+        <link rel="icon" href="favicon.ico">
+        <title>SXSW + LastFM</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <style>
+        @import url(https://fonts.googleapis.com/css?family=Raleway:400,200,300,100);
+
+        html {
+            background: #000;
+            font-family: 'Raleway', sans-serif;
+        }
+        body {
+            margin: 0;
+        }
+
+        div, span, input { animation: fadein 2s forwards; }
+
+        #intropage img {
+            display: inline-block;
+            margin: 0 auto;
+            width: 35%;
+            max-width: 150px;
+        }
+
+        @media screen and (max-width: 400px) {
+            #intropage img { display: block!important; }
+        }
+
+        #intropage {
+            text-align: center;
+            padding: 25px;
+            color: #c1c1c1;
+            letter-spacing: 2px;
+        }
+
+        #intropage #logox {
+            font-size: 50px;
+            vertical-align: sub;
+            padding: 0 25px;
+        }
+
+        #intropage #introtext {
+            display: block;
+            padding: 20px;
+        }
+
+        #intropage #lfmusername {
+            max-width: 300px;
+            width: 100%;
+            margin: 5px auto;
+            padding: 10px;
+            border-radius: 3px;
+            font-size: 15px;
+            border: 0;
+            display: block;
+            text-align:center;
+        }
+
+        #intropage #lfmbutton {
+            display: block;
+            margin: 20px auto;
+            padding: 5px 15px;
+            font-size: 15px;
+            background: #c2c2c2;
+            border: 0;
+        }
+
+        div#difflist {
+            width: 100%;
+            height:initial;
+            text-align:center;
+        }
+
+        div#difflist div {
+            max-width: 200px;
+            display: inline-block;
+            box-sizing: border-box;
+            position: relative;
+            padding: 5px;
+            width: 50%;
+            animation: fadein 3s forwards;
+        }
+
+        div#difflist img {
+            width: 100%;
+            filter: grayscale(100%);
+            max-height: 190px;
+            height: 50vw;
+            curosr: pointer;
+        }
+
+        div#difflist a { text-decoration: none; display:block;max-height: 190px; overflow: hidden; }
+
+        div#difflist div span {
+            position: absolute;
+            display: block;
+            text-align: center;
+            padding: 10px 0;
+            color: #ddd;
+            max-width: 190px;
+            width:95%;
+            font-size: 18px;
+            background-color: #8e0101;
+            background-color: rgba(142,1,1,0.7);
+            bottom: 15px;
+            text-transform: lowercase;
+        }
+
+        div#difflist a:hover img {
+            filter: initial;
+        }
+
+        div#difflist div#errorMessage {
+            font-size: 40px;
+            color: #d51007;
+            max-width: 100%;
+        }
+
+        span#pgButtons {
+            display: block;
+            color: #ddd;
+            padding: 15px;
+        }
+
+        span#showing {
+            padding: 15px;
+        }
+
+        #pgButtons #next, #pgButtons #prev {
+            color: #d51007;
+        }
+
+        #pgButtons #next:hover, #pgButtons #prev:hover {
+            color: #fff;
+            cursor: pointer;
+        }
+
+        @keyframes fadein {
+            0% {opacity:0;}
+
+            50% {opacity:0;}
+
+            100% {opacity:100;}
+        }
+
+        img[src=""] { visibility: hidden; }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="intropage"></div>
+        <div id="difflist"></div>
+
+        <script>
+
+            var sxArtists = [];
+            var lastfmArtists = [];
+            var lastfmUser = [];
+            var lastDiff = [];
+            var loadedPages = [];
+
+            initialLoad();
+
+            function initialLoad() {
+                document.getElementById("intropage").innerHTML = '' +
+                        '<img src="sxswlogo.png" id="sxswlogo"> <span id="logox">+</span><img src="lastfmlogo.png" id="lastfmlogo">' +
+                        '<span id="introtext">see which of your last.fm artists are playing at sxsw</span>' +
+                        '<input type="text" id="lfmusername" placeholder="your last.fm username" autocapitalize="none" /><input type="button" id="lfmbutton" value="submit" />';
+
+                $("#lfmusername").keyup(function(event){
+                    if(event.keyCode == 13){
+                        $("#lfmbutton").click();
+                    }
+                });
+
+                $('#lfmbutton').click(function() {
+                    lastfmUser = $('#lfmusername').val();
+                    $("#lfmusername").attr("disabled", "disabled");
+                    $("#lfmusername").blur();
+                    $("#lfmbutton").attr("disabled", "disabled");
+                    lastfmArtists = [];
+                    document.getElementById("difflist").innerHTML = "<img src='loader250.gif' style='margin:0 auto; display:block; max-width:250px;'>";
+                    getLastFM(1);
+                });
+            }
+
+            function getLastFM(p) {
+
+                var lfmRequest = $.get("https://ws.audioscrobbler.com/2.0/?method=user.getTopArtists&format=json&api_key=e3f7f53427bd48f698da66c84a35adde&user="+lastfmUser+"&period=overall&limit=1000&page="+p);
+
+                lfmRequest.done(function( lastfm ) {
+
+                    if (lastfm.error) { throwError(lastfm.message); }
+
+                    else if (lastfm.topartists.artist && lastfm.topartists.artist.length > 0) {
+                        $(lastfm.topartists.artist).each(function () {
+                            lastfmArtists.push({artist: this.name, image: this.image[2]["#text"]});
+                        });
+
+                        var totalPages = parseInt(lastfm.topartists["@attr"].totalPages);
+
+                        if (p < totalPages) {
+                            getLastFM(p + 1)
+                        }
+
+                        if (p == totalPages) {
+                            getSXSWLineup();
+                        }
+                    }
+
+                    else {
+                        var err;
+                        if (lastfm.topartists.artist && lastfm.topartists.artist.length < 1) { err = 'Your Last.fm library is empty'}
+                        throwError(err);
+                    }
+                });
+
+                lfmRequest.fail(function(jqXHR, textStatus, errorThrown) {
+                    var err;
+
+                    if (textStatus == 'timeout')
+                    { err = 'The server is not responding'; }
+
+                    else if (textStatus == 'error')
+                    { err = errorThrown }
+
+                    throwError(err);
+                });
+
+            }
+
+            function getSXSWLineup() {
+
+                    var sxRequest = $.get('https://raw.githubusercontent.com/camclarknet/sxswlastfm/master/sxswartists.json');
+
+                    sxRequest.done(function (sx) {
+
+                        sxArtists = JSON.parse(sx);
+                        compareLineups();
+
+                    });
+
+                    sxRequest.fail(function(jqXHR, textStatus, errorThrown) {
+                        var err;
+
+                        if (textStatus == 'timeout')
+                        { err = 'The server is not responding'; }
+
+                        else if (textStatus == 'error')
+                        { err = errorThrown }
+
+                        throwError(err);
+                    });
+
+            }
+
+            function compareLineups() {
+
+                lastDiff = [];
+
+                $(lastfmArtists).each(function (n) {
+                    $(sxArtists).each(function (s) {
+                        if (lastfmArtists[n].artist == sxArtists[s][1]) {
+                        var newartist = {artist: lastfmArtists[n].artist, href: sxArtists[s][0], image: lastfmArtists[n].image};
+                            lastDiff.push(newartist)
+                        }
+                    });
+                });
+
+                if (lastDiff.length > 0) {
+                    makeGrid(0);
+                }
+
+                else {
+                    var err;
+                    if (lastDiff.length < 1) { err = 'None of your Last.fm artists are at SXSW :( '}
+                    throwError(err);
+                }
+
+            }
+
+            function makeGrid(pg) {
+                var lfmText = '';
+                var prevButton = '';
+                var nxButton = '';
+                var nxshow = true;
+                var prvshow = true;
+                var pgStart = pg*100;
+                var pgEnd = pgStart+100;
+                var lastDiffCut = lastDiff.slice(pgStart,pgEnd);
+                if (pgEnd >= lastDiff.length) { pgEnd = lastDiff.length; nxshow = false;}
+                if (pg == 0) { prvshow = false }
+
+                var showing = ' <span id="showing">Showing '+ (pgStart+1) +'-'+(pgEnd)+' of '+lastDiff.length+'</span> ';
+                if (prvshow) { prevButton = '<span id="prev" onclick="makeGrid('+(pg-1)+')">prev</span>' }
+                if (nxshow) { nxButton = '<span id="next" onclick="makeGrid('+(pg+1)+')">next</span>' }
+
+                $(lastDiffCut).each(function (e) {
+                    if (this.image != "") {
+                        var albumImage = new Image();
+                        albumImage.src = this.image;
+                    }
+                    lfmText += '<div><a href="http://schedule.sxsw.com/' + this.href + '" target="_blank"><img src="' + this.image + '"><span>' + this.artist + '</span></a></div>'
+                });
+
+                document.getElementById("difflist").innerHTML = '<span id="pgButtons">' + prevButton + showing + nxButton +'</span>' + lfmText;
+                $("#lfmusername").removeAttr("disabled");
+                $("#lfmbutton").removeAttr("disabled");
+            }
+
+            function throwError(err) {
+                if (err == undefined || err == "") { err = 'Something broke. Try again.' }
+                document.getElementById("difflist").innerHTML = '<div id="errorMessage">'+err+'</div>';
+                $("#lfmusername").removeAttr("disabled");
+                $("#lfmbutton").removeAttr("disabled");
+            }
+        </script>
+
+    </body>
+
+</html>

@@ -150,6 +150,11 @@
 
         img[src=""] { visibility: hidden; }
 
+        span#lastupdated {
+            font-size: 12px;
+            color: #797979;
+        }
+
         </style>
     </head>
 
@@ -171,7 +176,8 @@
                 document.getElementById("intropage").innerHTML = '' +
                         '<img src="sxswlogo.png" id="sxswlogo"> <span id="logox">+</span><img src="lastfmlogo.png" id="lastfmlogo">' +
                         '<span id="introtext">see which of your last.fm artists are playing at sxsw</span>' +
-                        '<input type="text" id="lfmusername" placeholder="your last.fm username" autocapitalize="none" /><input type="button" id="lfmbutton" value="submit" />';
+                        '<input type="text" id="lfmusername" placeholder="your last.fm username" autocapitalize="none" /><input type="button" id="lfmbutton" value="submit" />' +
+                        '<span id="lastupdated">(artists updated on 10/17/2018)</span>';
 
                 $("#lfmusername").keyup(function(event){
                     if(event.keyCode == 13){

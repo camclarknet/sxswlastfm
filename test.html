@@ -2,12 +2,9 @@
 
 function myFunction(){
 navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
-            stream.getTracks().forEach(function(track) {
-                track.stop();
-            });
-            alert('it worked!')
+                       alert(stream);
         }).catch(err => {
-            alert(err)
+            alert(err);
         });
       
 }

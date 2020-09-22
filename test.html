@@ -3,17 +3,17 @@
 function myFunction(){
   console.log('test logging 2');
   
-var abc = navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
+  if (navigator && navigator.mediaDevices) {
+    var abc = navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
                        alert('it worked');
         }).catch(err => {
             alert(err);
         });
-  
-  
-  console.log('test logging 3');
-  console.log(abc);
-  console.dir(abc);
-      
+  }  
+  else {
+   console.log('test logging 3');
+    console.log(navigator);
+  }
 }
             
             </script>

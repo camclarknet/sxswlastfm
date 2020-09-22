@@ -1,11 +1,15 @@
 <script>
 
 function myFunction(){
-navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
-                       alert(stream);
+  console.log('test logging');
+  
+var abc = navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
+                       alert('it worked');
         }).catch(err => {
             alert(err);
         });
+  
+  if (!abc) { alert('no navigator') }
       
 }
             

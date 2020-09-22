@@ -1,7 +1,7 @@
 <script>
 
 function myFunction(){
-  console.log('test logging');
+  console.log('test logging 2');
   
 var abc = navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then((stream) => {
                        alert('it worked');
@@ -9,7 +9,10 @@ var abc = navigator.mediaDevices.getUserMedia({ audio: true, video: true}).then(
             alert(err);
         });
   
+  
+  console.log('test logging 3');
   console.log(abc);
+  console.dir(abc);
       
 }
             
